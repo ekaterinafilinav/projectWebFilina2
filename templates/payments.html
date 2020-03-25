@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<meta charset="UTF-8">
+
+<h2 align="center">List of Payments</h2>
+{% if current_user.is_authenticated %}
+<p align="justify">
+    <a href="index" class="btn btn-secondary">Back to Jobs</a>
+    <a href="add_pay" class="btn btn-secondary">Add a Payments</a></p>
+{% endif %}
+{% for pay in payments %}
+<h3>Pay # {{ pay.id }}</h3>
+<div class="table_container">
+    <table class="my_table">
+        <tr class="my_row">
+            <td class="title" width="400px" bgcolor="#dddddd">Title of payment</td>
+            <td class="title" width="150px" bgcolor="#dddddd">who_paid</td>
+            <td class="title" width="100px" bgcolor="#dddddd" align="center">pay_size</td>
+            <td class="title" width="200px" bgcolor="#dddddd" align="center">Payments category</td>
+        </tr>
+        <tr class="my_row">
+            <td class="ordinary" bgcolor="#eeeeff">{{ pay.title.capitalize() }}</td>
+            <td class="ordinary" bgcolor="#eeeeff">{{ names[pay.who_paid][0] }} {{ names[pay.who_paid][1] }}</td>
+            <td class="ordinary" bgcolor="#eeeeff" align="center">{{ pay.pay_size }}</td>
+            <td class="ordinary" bgcolor="#eeeeff" align="center">{{ pay.category }}</td>
+        </tr>
+
+    </table>
+</div>
+<br>
+{% if current_user.is_authenticated and current_user.id == pay.who_paid or current_user.id == 1  %}
+<div>
+    <a href="/payments/{{ pay.id }}" class="btn btn-warning">Edit Department</a>
+    <a href="/pay_delete/{{ pay.id }}" class="btn btn-danger">Delete Department</a>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}

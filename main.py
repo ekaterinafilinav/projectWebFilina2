@@ -1,8 +1,10 @@
 import sys
-
+import os
 import requests
-from flask import Flask, render_template, redirect, make_response, jsonify, request
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask import Flask, render_template, redirect, make_response, jsonify, \
+    request
+from flask_login import LoginManager, login_user, login_required, logout_user, \
+    current_user
 from flask_restful import abort
 from requests import get
 
@@ -16,6 +18,7 @@ from data.payments import Payments
 from data.register import RegisterForm
 
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 api_key = "40d1649f-0493-4b70-98ba-98533de7710b"
 login_manager = LoginManager()
@@ -30,7 +33,9 @@ def show_city(user_id):
 
     if response:
         json_response = response.json()
-        toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+        toponym = \
+        json_response["response"]["GeoObjectCollection"]["featureMember"][0][
+            "GeoObject"]
         toponym_coodrinates = ','.join(toponym["Point"]["pos"].split())
         # print(toponym_coodrinates)
         map_request = f"http://static-maps.yandex.ru/1.x/?ll={toponym_coodrinates}&spn=0.03,0.03&l=sat"
@@ -70,7 +75,8 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
-        return render_template('login.html', message="Wrong login or password", form=form)
+        return render_template('login.html', message="Wrong login or password",
+                               form=form)
     return render_template('login.html', title='Authorization', form=form)
 
 
@@ -80,9 +86,10 @@ def index():
     session = db_session.create_session()
     jobs = session.query(Jobs).all()
     users = session.query(User).all()
-    #надо достать категорию
+    # надо достать категорию
     names = {name.id: (name.surname, name.name) for name in users}
-    return render_template("index.html", jobs=jobs, names=names, title='Мой кошлек')
+    return render_template("index.html", jobs=jobs, names=names,
+                           title='Мой кошлек')
 
 
 @app.route('/logout')
@@ -128,8 +135,8 @@ def addjob():
             job=add_form.job.data,
             whose_salary=add_form.whose_salary.data,
             work_size=add_form.work_size.data,
-            #collaborators=add_form.collaborators.data,
-            #is_finished=add_form.is_finished.data
+            # collaborators=add_form.collaborators.data,
+            # is_finished=add_form.is_finished.data
         )
         session.add(jobs)
         session.commit()
@@ -144,7 +151,9 @@ def job_edit(id):
     if request.method == "GET":
         session = db_session.create_session()
         jobs = session.query(Jobs).filter(Jobs.id == id,
-                                          (Jobs.whose_salary == current_user.id) | (current_user.id == 1)).first()
+                                          (
+                                                      Jobs.whose_salary == current_user.id) | (
+                                                      current_user.id == 1)).first()
         if jobs:
             form.job.data = jobs.job
             form.whose_salary.data = jobs.whose_salary
@@ -156,7 +165,9 @@ def job_edit(id):
     if form.validate_on_submit():
         session = db_session.create_session()
         jobs = session.query(Jobs).filter(Jobs.id == id,
-                                          (Jobs.whose_salary == current_user.id) | (current_user.id == 1)).first()
+                                          (
+                                                      Jobs.whose_salary == current_user.id) | (
+                                                      current_user.id == 1)).first()
         if jobs:
             jobs.job = form.job.data
             jobs.whose_salary = form.whose_salary.data
@@ -167,7 +178,8 @@ def job_edit(id):
             return redirect('/')
         else:
             abort(404)
-    return render_template('addjob.html', title='Редактирование записи дохода', form=form)
+    return render_template('addjob.html', title='Редактирование записи дохода',
+                           form=form)
 
 
 @app.route('/job_delete/<int:id>', methods=['GET', 'POST'])
@@ -175,7 +187,8 @@ def job_edit(id):
 def job_delete(id):
     session = db_session.create_session()
     jobs = session.query(Jobs).filter(Jobs.id == id,
-                                      (Jobs.whose_salary == current_user.id) | (current_user.id == 1)).first()
+                                      (Jobs.whose_salary == current_user.id) | (
+                                                  current_user.id == 1)).first()
 
     if jobs:
         session.delete(jobs)
@@ -199,7 +212,8 @@ def add_pay():
         session.add(pay)
         session.commit()
         return redirect('/')
-    return render_template('add_pay.html', title='Adding a Payment', form=add_form)
+    return render_template('add_pay.html', title='Adding a Payment',
+                           form=add_form)
 
 
 @app.route("/payments")
@@ -208,7 +222,8 @@ def pay():
     payments = session.query(Payments).all()
     users = session.query(User).all()
     names = {name.id: (name.surname, name.name) for name in users}
-    return render_template("payments.html", payments=payments, names=names, title='List of Payments')
+    return render_template("payments.html", payments=payments, names=names,
+                           title='List of Payments')
 
 
 @app.route('/payments/<int:id>', methods=['GET', 'POST'])
@@ -218,8 +233,9 @@ def pay_edit(id):
     if request.method == "GET":
         session = db_session.create_session()
         pay = session.query(Payments).filter(Payments.id == id,
-                                                  (Payments.chief == current_user.id) | (
-                                                          current_user.id == 1)).first()
+                                             (
+                                                         Payments.chief == current_user.id) | (
+                                                     current_user.id == 1)).first()
 
         if pay:
             form.title.data = pay.title
@@ -231,8 +247,9 @@ def pay_edit(id):
     if form.validate_on_submit():
         session = db_session.create_session()
         pay = session.query(Payments).filter(Payments.id == id,
-                                                  (Payments.chief == current_user.id) | (
-                                                          current_user.id == 1)).first()
+                                             (
+                                                         Payments.chief == current_user.id) | (
+                                                     current_user.id == 1)).first()
         if pay:
 
             pay.title = form.title.data
@@ -251,8 +268,8 @@ def pay_edit(id):
 def payments_delete(id):
     session = db_session.create_session()
     pay = session.query(Payments).filter(Payments.id == id,
-                                              (Payments.chief == current_user.id) | (
-                                                      current_user.id == 1)).first()
+                                         (Payments.chief == current_user.id) | (
+                                                 current_user.id == 1)).first()
     if pay:
         session.delete(pay)
         session.commit()
@@ -270,4 +287,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
